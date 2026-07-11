@@ -54,39 +54,6 @@ It gives us real attendance history per meeting (needed for a genuine
 like "remove participant" — you can't target a specific row to delete if
 attendees are just an unstructured JSON blob.
 
-## Architecture Decisions (read this before the evaluation interview)
-
-**Why WebRTC signaling via WebSocket, not polling:**
-WebRTC connection setup (exchanging SDP offers/answers and ICE candidates)
-is a real-time handshake between two browsers — polling would add latency
-and complexity for no benefit. A WebSocket lets the server push these small
-JSON messages the instant they're available, and FastAPI supports
-WebSockets natively without extra libraries.
-
-**Why the signaling server never touches video/audio:**
-Once two browsers exchange SDP/ICE info through the WebSocket relay, they
-establish a *direct* peer-to-peer connection for actual media — the server's
-job ends at introductions. This is why the backend stays cheap to run even
-during an active call: it's relaying a handful of small text messages, not
-streaming video.
-
-**Why this doesn't scale past ~4-6 participants (and what would fix it):**
-This app uses **mesh topology** — every participant holds a direct
-connection to every other participant. Each participant's upload bandwidth
-therefore multiplies with room size (with N participants, everyone uploads
-their video N-1 times). Real Zoom/Google Meet solve this with an **SFU**
-(Selective Forwarding Unit) — a media server that each participant uploads
-to *once*, which then forwards streams to everyone else. Implementing an
-SFU (e.g. with mediasoup or LiveKit) would be the natural next step to
-support larger meetings.
-
-**Why offer/answer direction is one-way (only new joiners initiate):**
-If both sides tried to create offers to each other simultaneously, WebRTC
-handles that badly ("glare"). Instead: when you join, you learn who's
-already in the room and initiate connections to each of them. Existing
-participants stay passive and simply answer when your offer arrives — a
-deterministic handshake direction with no race condition.
-
 ## Local Setup
 
 ### Backend
@@ -136,11 +103,6 @@ Frontend runs at `http://localhost:3000`.
 2. In Vercel's project settings → Environment Variables, add:
    `NEXT_PUBLIC_API_URL` = your Render backend URL (from above)
 3. Deploy. Vercel auto-detects Next.js and handles the build.
-
-### Note on CORS
-`backend/app/main.py` currently allows all origins (`allow_origins=["*"]`)
-for ease of local development. For a tighter production setup, replace
-this with your actual deployed Vercel domain.
 
 ## Project Structure
 ```
