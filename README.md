@@ -4,6 +4,10 @@ A functional clone of Zoom's web meeting platform: create instant meetings,
 join by ID/link, schedule meetings, and hold real peer-to-peer video calls —
 built for an SDE Fullstack assignment.
 
+## Live Demo
+- Frontend: https://zoom-clone-one-brown.vercel.app
+- Backend API docs: https://zoom-clone-backend-3bqh.onrender.com/docs 
+
 ## Tech Stack
 
 - **Frontend:** Next.js (App Router, JavaScript), Tailwind CSS
